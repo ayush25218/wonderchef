@@ -1,8 +1,9 @@
 // app/purchases/orders/page.js
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "../../../components/Header";
 import { Filter, FileText } from "lucide-react";
+import FullPageLoader from "../../../components/FullPageLoader";
 
 const purchaseOrders = [
     { orderId: '#PO-2001', date: 'Aug 19, 2025', vendor: 'Vendor A', amount: 5000.00, status: 'Pending' },
@@ -17,10 +18,20 @@ const purchaseOrders = [
 
 export default function Page() {
     const [filterStatus, setFilterStatus] = useState("All");
+  const [loading, setLoading] = useState(true);
+
+  // Loader simulation
+    useEffect(() => {
+      const timer = setTimeout(() => setLoading(false), 1200);
+      return () => clearTimeout(timer);
+    }, []);
 
     const filteredOrders = purchaseOrders.filter(order => {
         return filterStatus === "All" || order.status === filterStatus;
     });
+
+    if (loading)
+        return <FullPageLoader message="Loading Order..." loading={loading} />;
 
     return (
         <div className="bg-slate-50 min-h-screen">

@@ -3,12 +3,15 @@
 import React, { useState } from 'react';
 import { accounts } from '../lib/data';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 
 export default function AddAccountPage() {
     const [accountData, setAccountData] = useState({
         name: '',
         accountNumber: '',
         bankName: '',
+        branchName: '',
+        ifsc: '',
         type: '',
         balance: '',
     });
@@ -33,50 +36,84 @@ export default function AddAccountPage() {
 
         accounts.push(newAccount);
 
-        setMessage('New account added successfully!');
+        setMessage('🎉 New account added successfully!');
         setAccountData({
             name: '',
             accountNumber: '',
             bankName: '',
+            branchName: '',
+            ifsc: '',
             type: '',
             balance: '',
         });
     };
 
     return (
-        <div className="bg-slate-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-4xl mx-auto">
-                {/* Header Section */}
+        <div className="bg-gradient-to-br from-indigo-100 via-white to-purple-100 min-h-screen py-12 px-6 flex items-center justify-center">
+            <motion.div 
+                initial={{ opacity: 0, y: 50 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                transition={{ duration: 0.6 }}
+                className="w-full max-w-4xl"
+            >
+                {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-center mb-10">
-                    <h1 className="text-4xl font-extrabold text-gray-900 mb-4 sm:mb-0">Add a New Account</h1>
+                    <h1 className="text-3xl font-extrabold text-gray-900 text-center sm:text-left">
+                        Add New Bank Account
+                    </h1>
                     <Link href="/account/list">
-                        <span className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-300 transform hover:scale-105">
-                            View Account List
+                        <span className="inline-flex items-center px-6 py-3 rounded-full shadow-md bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold hover:scale-105 hover:shadow-xl transition-all duration-300 cursor-pointer">
+                            View Accounts
                         </span>
                     </Link>
                 </div>
 
-                {/* Main Form Card */}
-                <div className="bg-white p-8 sm:p-10 rounded-3xl shadow-2xl border border-gray-200">
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Grid for Form Fields */}
+                {/* Modern Card */}
+                <div className="bg-white/70 backdrop-blur-lg border border-gray-200 rounded-3xl shadow-2xl p-10">
+                    <form onSubmit={handleSubmit} className="space-y-8">
+                        {/* Grid Inputs */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label htmlFor="name" className="block text-sm font-medium text-gray-700">Account Name</label>
-                                <input id="name" name="name" autocomplete="off" type="text" required className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-200" placeholder="e.g., Personal Savings, Business Checking" value={accountData.name} onChange={handleChange} />
+                                <label htmlFor="name" className="block text-sm font-semibold text-gray-700">Account Name</label>
+                                <input id="name" name="name" autoComplete="off" type="text" required 
+                                    className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
+                                    placeholder="e.g., Personal Savings"
+                                    value={accountData.name} onChange={handleChange} />
                             </div>
                             <div>
-                                <label htmlFor="bankName" className="block text-sm font-medium text-gray-700">Bank Name</label>
-                                <input id="bankName" name="bankName" autocomplete="off" type="text" required className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-200" placeholder="e.g., State Bank of India" value={accountData.bankName} onChange={handleChange} />
+                                <label htmlFor="bankName" className="block text-sm font-semibold text-gray-700">Bank Name</label>
+                                <input id="bankName" name="bankName" autoComplete="off" type="text" required 
+                                    className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
+                                    placeholder="e.g., HDFC Bank"
+                                    value={accountData.bankName} onChange={handleChange} />
                             </div>
                             <div>
-                                <label htmlFor="accountNumber" className="block text-sm font-medium text-gray-700">Account Number</label>
-                                <input id="accountNumber" name="accountNumber" autocomplete="off" type="text" required className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-200" placeholder="e.g., 1234567890" value={accountData.accountNumber} onChange={handleChange} />
+                                <label htmlFor="branchName" className="block text-sm font-semibold text-gray-700">Branch Name</label>
+                                <input id="branchName" name="branchName" autoComplete="off" type="text" required 
+                                    className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
+                                    placeholder="e.g., Andheri West"
+                                    value={accountData.branchName} onChange={handleChange} />
                             </div>
                             <div>
-                                <label htmlFor="type" className="block text-sm font-medium text-gray-700">Account Type</label>
-                                <select id="type" name="type" required className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-200" value={accountData.type} onChange={handleChange}>
-                                    <option value="">Select an Account Type</option>
+                                <label htmlFor="ifsc" className="block text-sm font-semibold text-gray-700">IFSC Code</label>
+                                <input id="ifsc" name="ifsc" autoComplete="off" type="text" required 
+                                    className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
+                                    placeholder="e.g., HDFC0001234"
+                                    value={accountData.ifsc} onChange={handleChange} />
+                            </div>
+                            <div>
+                                <label htmlFor="accountNumber" className="block text-sm font-semibold text-gray-700">Account Number</label>
+                                <input id="accountNumber" name="accountNumber" autoComplete="off" type="text" required 
+                                    className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
+                                    placeholder="e.g., 1234567890"
+                                    value={accountData.accountNumber} onChange={handleChange} />
+                            </div>
+                            <div>
+                                <label htmlFor="type" className="block text-sm font-semibold text-gray-700">Account Type</label>
+                                <select id="type" name="type" required 
+                                    className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
+                                    value={accountData.type} onChange={handleChange}>
+                                    <option value="">Select Type</option>
                                     <option value="Checking">Checking</option>
                                     <option value="Savings">Savings</option>
                                     <option value="Cash">Cash</option>
@@ -84,36 +121,48 @@ export default function AddAccountPage() {
                             </div>
                         </div>
 
-                        {/* Balance Field */}
+                        {/* Balance */}
                         <div>
-                            <label htmlFor="balance" className="block text-sm font-medium text-gray-700">Current Balance</label>
-                            <div className="mt-1 relative rounded-lg shadow-sm">
+                            <label htmlFor="balance" className="block text-sm font-semibold text-gray-700">Opening Balance</label>
+                            <div className="mt-2 relative rounded-xl shadow-sm">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <span className="text-gray-500 sm:text-sm">₹</span>
                                 </div>
-                                <input id="balance" name="balance" type="number" step="0.01" required className="block w-full pl-7 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-200" placeholder="0.00" value={accountData.balance} onChange={handleChange} />
+                                <input id="balance" name="balance" type="number" step="0.01" required 
+                                    className="block w-full pl-7 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
+                                    placeholder="0.00"
+                                    value={accountData.balance} onChange={handleChange} />
                                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                    <span className="text-gray-500 sm:text-sm" id="price-currency">INR</span>
+                                    <span className="text-gray-500 sm:text-sm">INR</span>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Submit Button */}
-                        <button type="submit" className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-300 transform hover:scale-105">
-                            Add Account
-                        </button>
+                        {/* Submit */}
+                        <motion.button 
+                            whileHover={{ scale: 1.05 }} 
+                            whileTap={{ scale: 0.95 }}
+                            type="submit" 
+                            className="w-full py-4 px-4 rounded-xl shadow-lg text-lg font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:ring-4 focus:ring-indigo-300 transition-all"
+                        >
+                            🚀 Add Account
+                        </motion.button>
                     </form>
 
                     {/* Success Message */}
                     {message && (
-                        <div className="mt-8">
-                            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg relative text-center" role="alert">
-                                <span className="block sm:inline">{message}</span>
+                        <motion.div 
+                            initial={{ opacity: 0, y: 20 }} 
+                            animate={{ opacity: 1, y: 0 }}
+                            className="mt-8"
+                        >
+                            <div className="bg-green-100 border border-green-400 text-green-700 px-6 py-4 rounded-xl shadow text-center font-medium">
+                                {message}
                             </div>
-                        </div>
+                        </motion.div>
                     )}
                 </div>
-            </div>
+            </motion.div>
         </div>
     );
 }

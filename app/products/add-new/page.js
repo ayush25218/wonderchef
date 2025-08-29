@@ -1,180 +1,296 @@
 // app/products/add-new/page.js
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "../../../components/Header";
 import ProductHeader from "../../../components/ProductHeader";
-import { PlusCircle, Image as ImageIcon } from "lucide-react";
+import {
+  PlusCircle,
+  Image as ImageIcon,
+  CheckCircle2,
+  Loader2,
+} from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import FullPageLoader from "../../../components/FullPageLoader";
 
 export default function Page() {
-    const [name, setName] = useState("");
-    const [sku, setSku] = useState("");
-    const [category, setCategory] = useState("");
-    const [price, setPrice] = useState("");
-    const [stock, setStock] = useState("");
-    const [imageFile, setImageFile] = useState(null);
-    const [imagePreview, setImagePreview] = useState(null);
+  const [name, setName] = useState("");
+  const [sku, setSku] = useState("");
+  const [category, setCategory] = useState("");
+  const [brand, setBrand] = useState("");
+  const [price, setPrice] = useState("");
+  const [stock, setStock] = useState("");
+  const [description, setDescription] = useState("");
+  const [tags, setTags] = useState("");
+  const [status, setStatus] = useState("active");
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
 
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setImageFile(file);
-            setImagePreview(URL.createObjectURL(file));
-        }
-    };
+  const [pageLoading, setPageLoading] = useState(true);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [successPopup, setSuccessPopup] = useState(false);
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log("New Product Added:", { name, sku, category, price, stock, imageFile });
-        alert("Product Added Successfully!");
+  // Full page loader simulation
+  useEffect(() => {
+    const timer = setTimeout(() => setPageLoading(false), 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
-        // Optionally, reset the form after submission
-        setName("");
-        setSku("");
-        setCategory("");
-        setPrice("");
-        setStock("");
-        setImageFile(null);
-        setImagePreview(null);
-    };
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
 
-    return (
-        <div className="bg-slate-50 min-h-screen">
-            <Header title="Add New Product" />
-            <ProductHeader />
-            <div className="p-6">
-                <div className="card p-8 bg-white shadow-xl rounded-2xl max-w-4xl mx-auto">
-                    <form className="space-y-8" onSubmit={handleSubmit}>
-                        {/* Product Details Section */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <h3 className="text-xl font-bold text-gray-800">Product Details</h3>
-                                <p className="text-sm text-gray-500 mt-1">Fill in the basic product information.</p>
-                            </div>
-                            <div className="space-y-6">
-                                {/* Name */}
-                                <div>
-                                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
-                                    <input
-                                        type="text"
-                                        id="name"
-                                        value={name}
-                                        onChange={(e) => setName(e.target.value)}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        required
-                                        autocomplete="off"
-                                    />
-                                </div>
-                                {/* SKU */}
-                                <div>
-                                    <label htmlFor="sku" className="block text-sm font-medium text-gray-700">SKU</label>
-                                    <input
-                                        type="text"
-                                        id="sku"
-                                        value={sku}
-                                        onChange={(e) => setSku(e.target.value)}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        required
-                                        autocomplete="off"
-                                    />
-                                </div>
-                                {/* Category */}
-                                <div>
-                                    <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
-                                    <input
-                                        type="text"
-                                        id="category"
-                                        value={category}
-                                        onChange={(e) => setCategory(e.target.value)}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    />
-                                </div>
-                            </div>
-                        </div>
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitLoading(true);
 
-                        <div className="border-t border-gray-200 pt-8"></div>
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1200));
 
-                        {/* Pricing & Stock Section */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <h3 className="text-xl font-bold text-gray-800">Pricing & Stock</h3>
-                                <p className="text-sm text-gray-500 mt-1">Set the price and current stock levels.</p>
-                            </div>
-                            <div className="space-y-6">
-                                {/* Price */}
-                                <div>
-                                    <label htmlFor="price" className="block text-sm font-medium text-gray-700">Price (₹)</label>
-                                    <input
-                                        type="number"
-                                        id="price"
-                                        value={price}
-                                        onChange={(e) => setPrice(e.target.value)}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        min="0"
-                                        required
-                                        autocomplete="off"
-                                    />
-                                </div>
-                                {/* Stock */}
-                                <div>
-                                    <label htmlFor="stock" className="block text-sm font-medium text-gray-700">Stock</label>
-                                    <input
-                                        type="number"
-                                        id="stock"
-                                        value={stock}
-                                        onChange={(e) => setStock(e.target.value)}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        min="0"
-                                        required
-                                        autocomplete="off"
-                                    />
-                                </div>
-                            </div>
-                        </div>
+    setSubmitLoading(false);
+    setSuccessPopup(true);
 
-                        <div className="border-t border-gray-200 pt-8"></div>
+    // Reset form
+    setName("");
+    setSku("");
+    setCategory("");
+    setBrand("");
+    setPrice("");
+    setStock("");
+    setDescription("");
+    setTags("");
+    setStatus("active");
+    setImageFile(null);
+    setImagePreview(null);
+  };
 
-                        {/* Image Section */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <h3 className="text-xl font-bold text-gray-800">Product Image</h3>
-                                <p className="text-sm text-gray-500 mt-1">Upload a high-quality image of the product.</p>
-                            </div>
-                            <div className="flex flex-col items-center justify-center space-y-4">
-                                {imagePreview ? (
-                                    <img src={imagePreview} alt="Product Preview" className="h-48 w-48 rounded-md object-cover shadow-lg" />
-                                ) : (
-                                    <div className="h-48 w-48 rounded-md flex items-center justify-center bg-gray-100 text-gray-400 border border-gray-300 border-dashed">
-                                        <ImageIcon size={48} />
-                                    </div>
-                                )}
-                                <label htmlFor="image-upload" className="cursor-pointer">
-                                    <div className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors">
-                                        Upload Image
-                                    </div>
-                                    <input
-                                        id="image-upload"
-                                        type="file"
-                                        className="hidden"
-                                        onChange={handleImageChange}
-                                        accept="image/*"
-                                        autocomplete="off"
-                                    />
-                                </label>
-                            </div>
-                        </div>
+  if (pageLoading) return <FullPageLoader message="Loading Add Product..." loading={true} />;
 
-                        {/* Submit Button */}
-                        <div className="mt-8">
-                            <button
-                                type="submit"
-                                className="w-full flex justify-center py-4 px-4 border border-transparent rounded-md shadow-sm text-lg font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                            >
-                                <PlusCircle size={24} className="mr-2" /> Add Product
-                            </button>
-                        </div>
-                    </form>
-                </div>
+  return (
+    <div className="bg-gray-50 min-h-screen pb-16">
+      <Header title="Add New Product" />
+      <ProductHeader />
+      <div className="p-6">
+        <div className="max-w-full mx-auto bg-white rounded-3xl shadow-2xl p-10 space-y-8">
+          <h2 className="text-2xl font-bold text-gray-800 border-b pb-2 mb-6">
+            Product Information
+          </h2>
+          <form onSubmit={handleSubmit} className="space-y-6 relative">
+            {/* Submit Loader overlay */}
+            {submitLoading && (
+              <div className="absolute inset-0 bg-black/20 flex items-center justify-center z-10 rounded-3xl">
+                <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
+              </div>
+            )}
+
+            {/* Product Name */}
+            <div>
+              <label className="block text-gray-700 font-semibold mb-2">Product Name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm"
+                placeholder="Enter product name"
+                required
+                autoComplete="off"
+              />
             </div>
+
+            {/* SKU & Brand */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-gray-700 font-semibold mb-2">SKU / Product Code</label>
+                <input
+                  type="text"
+                  value={sku}
+                  onChange={(e) => setSku(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm"
+                  placeholder="Enter SKU"
+                  required
+                  autoComplete="off"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 font-semibold mb-2">Brand</label>
+                <input
+                  type="text"
+                  value={brand}
+                  onChange={(e) => setBrand(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm"
+                  placeholder="Enter brand name"
+                  autoComplete="off"
+                />
+              </div>
+            </div>
+
+            {/* Category */}
+            <div>
+              <label className="block text-gray-700 font-semibold mb-2">Category</label>
+              <input
+                type="text"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm"
+                placeholder="Enter category"
+                autoComplete="off"
+              />
+            </div>
+
+            {/* Price & Stock */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-gray-700 font-semibold mb-2">Price (₹)</label>
+                <input
+                  type="number"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm"
+                  placeholder="Enter price"
+                  min="0"
+                  required
+                  autoComplete="off"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 font-semibold mb-2">Stock Quantity</label>
+                <input
+                  type="number"
+                  value={stock}
+                  onChange={(e) => setStock(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm"
+                  placeholder="Enter stock quantity"
+                  min="0"
+                  required
+                  autoComplete="off"
+                />
+              </div>
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="block text-gray-700 font-semibold mb-2">Product Description</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm"
+                placeholder="Enter product description"
+                rows="4"
+                autoComplete="off"
+              />
+            </div>
+
+            {/* Tags & Status */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-gray-700 font-semibold mb-2">Tags / Keywords</label>
+                <input
+                  type="text"
+                  value={tags}
+                  onChange={(e) => setTags(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm"
+                  placeholder="Separate tags by comma"
+                  autoComplete="off"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 font-semibold mb-2">Status</label>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm"
+                >
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Product Image */}
+            <div>
+              <label className="block text-gray-700 font-semibold mb-2">Product Image</label>
+              <div className="flex flex-col items-center justify-center space-y-4">
+                {imagePreview ? (
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="h-52 w-52 object-cover rounded-2xl shadow-lg"
+                  />
+                ) : (
+                  <div className="h-52 w-52 flex items-center justify-center bg-gray-100 rounded-2xl border border-dashed border-gray-300 text-gray-400">
+                    <ImageIcon size={48} />
+                  </div>
+                )}
+                <label htmlFor="image-upload" className="cursor-pointer">
+                  <div className="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition">
+                    Upload Image
+                  </div>
+                  <input
+                    id="image-upload"
+                    type="file"
+                    className="hidden"
+                    onChange={handleImageChange}
+                    accept="image/*"
+                    autoComplete="off"
+                  />
+                </label>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="pt-6">
+              <button
+                type="submit"
+                disabled={submitLoading}
+                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium py-3 rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.01] transition flex items-center justify-center"
+              >
+                {submitLoading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <PlusCircle className="mr-2" /> Add Product
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
         </div>
-    );
+      </div>
+
+      {/* Success Popup */}
+      <AnimatePresence>
+        {successPopup && (
+          <motion.div
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-white rounded-2xl p-8 shadow-2xl text-center space-y-4 max-w-sm w-full"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+            >
+              <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto" />
+              <h2 className="text-2xl font-bold text-slate-800">Product Added!</h2>
+              <p className="text-slate-500">Your product has been successfully added.</p>
+              <button
+                onClick={() => setSuccessPopup(false)}
+                className="bg-green-500 text-white px-6 py-2 rounded-xl shadow-md hover:bg-green-600 transition"
+              >
+                OK
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }

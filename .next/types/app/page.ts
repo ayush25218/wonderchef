@@ -1,4 +1,4 @@
-// File: C:\Users\ayush\WebstormProjects\wonderchef\app\page.js
+// File: C:\xampp\htdocs\udf\wonderchef\app\page.js
 import * as entry from '../../../app/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

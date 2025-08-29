@@ -1,192 +1,354 @@
 "use client";
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { CheckCircle2, Loader2 } from "lucide-react"; // ✅ icons
 import Header from "../../../components/Header";
 
-// यह नकली डेटा है जिसे आप अपने डेटाबेस से बदल सकते हैं
+// Dummy data (replace with DB/API later)
+const customers = [
+  "Rahul Sharma",
+  "Anjali Singh",
+  "Vikram Rao",
+  "Priya Mehta",
+  "Amit Verma",
+];
 const availableProducts = [
-    { id: 1, name: 'Premium Coffee Beans', price: 25.00 },
-    { id: 2, name: 'Gourmet Chocolate Bar', price: 5.50 },
-    { id: 3, name: 'Organic Herbal Tea', price: 12.00 },
-    { id: 4, name: 'Artisanal Honey', price: 18.75 },
+  { id: 1, name: "Premium Coffee Beans", price: 25.0, stock: 50, category: "Beverage" },
+  { id: 2, name: "Gourmet Chocolate Bar", price: 5.5, stock: 120, category: "Snacks" },
+  { id: 3, name: "Organic Herbal Tea", price: 12.0, stock: 80, category: "Beverage" },
+  { id: 4, name: "Artisanal Honey", price: 18.75, stock: 40, category: "Grocery" },
 ];
 
 export default function Page() {
-    const [customer, setCustomer] = useState("");
-    const [products, setProducts] = useState([{ productId: '', quantity: 1, price: 0 }]);
-    const [discount, setDiscount] = useState(0);
-    const [taxRate, setTaxRate] = useState(5); // 5% टैक्स रेट
-    const [subtotal, setSubtotal] = useState(0);
-    const [totalAmount, setTotalAmount] = useState(0);
-    const [paymentMethod, setPaymentMethod] = useState("Cash");
+  const [customer, setCustomer] = useState("");
+  const [customerSearch, setCustomerSearch] = useState("");
+  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
 
-    // जब भी products, discount, या taxRate बदलता है, तो कुल राशि की गणना करें
-    useEffect(() => {
-        let newSubtotal = 0;
-        products.forEach(p => {
-            newSubtotal += p.quantity * p.price;
-        });
-        setSubtotal(newSubtotal);
+  const [products, setProducts] = useState([]);
+  const [productSearch, setProductSearch] = useState("");
+  const [showProductDropdown, setShowProductDropdown] = useState(false);
 
-        const discountAmount = newSubtotal * (discount / 100);
-        const taxAmount = (newSubtotal - discountAmount) * (taxRate / 100);
-        const finalTotal = newSubtotal - discountAmount + taxAmount;
-        setTotalAmount(finalTotal);
-    }, [products, discount, taxRate]);
+  const [discount, setDiscount] = useState(0);
+  const [taxRate, setTaxRate] = useState(5);
+  const [subtotal, setSubtotal] = useState(0);
+  const [totalAmount, setTotalAmount] = useState(0);
 
-    const handleProductChange = (index, event) => {
-        const newProducts = [...products];
-        const { name, value } = event.target;
-        newProducts[index][name] = value;
+  const [loading, setLoading] = useState(false);
+  const [successPopup, setSuccessPopup] = useState(false);
 
-        // अगर उत्पाद बदला गया है, तो उसकी कीमत भी अपडेट करें
-        if (name === 'productId') {
-            const selectedProduct = availableProducts.find(p => p.id === parseInt(value));
-            if (selectedProduct) {
-                newProducts[index].price = selectedProduct.price;
-            }
-        }
-        setProducts(newProducts);
-    };
+  const [pageLoading, setPageLoading] = useState(true); // ✅ full page loader
 
-    const addProductRow = () => {
-        setProducts([...products, { productId: '', quantity: 1, price: 0 }]);
-    };
+  // 🎵 sound effect
+  const playSound = () => {
+    const audio = new Audio("/sounds/beep-sound.mp3");
+    audio.play();
+  };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log("Sale Recorded:", { customer, products, discount, totalAmount, paymentMethod });
-        alert("Sale Recorded Successfully!");
-    };
+  // Loader 1.5 sec ke liye
+  useEffect(() => {
+    const timer = setTimeout(() => setPageLoading(false), 1500);
+    return () => clearTimeout(timer);
+  }, []);
 
-    return (
-        <div className="bg-slate-50 min-h-screen">
-            <Header title="Add New Sale" />
-            <div className="p-6">
-                <div className="card p-8 bg-white shadow-xl rounded-2xl max-w-4xl mx-auto">
-                    <form className="space-y-8" onSubmit={handleSubmit}>
-                        {/* Customer Details */}
-                        <div>
-                            <h3 className="text-xl font-bold text-gray-800">Customer Details</h3>
-                            <div className="mt-4">
-                                <label htmlFor="customer" className="block text-sm font-medium text-gray-700">Customer Name</label>
-                                <input
-                                    type="text"
-                                    id="customer"
-                                    value={customer}
-                                    onChange={(e) => setCustomer(e.target.value)}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    placeholder="Enter customer name"
-                                />
-                            </div>
-                        </div>
+  // Recalculate totals
+  useEffect(() => {
+    let newSubtotal = 0;
+    products.forEach((p) => {
+      newSubtotal += p.quantity * p.price;
+    });
+    setSubtotal(newSubtotal);
 
-                        {/* Product Details */}
-                        <div>
-                            <h3 className="text-xl font-bold text-gray-800">Product Details</h3>
-                            <div className="mt-4 space-y-4">
-                                {products.map((product, index) => (
-                                    <div key={index} className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
-                                        <div className="sm:col-span-2">
-                                            <label htmlFor={`product-${index}`} className="block text-sm font-medium text-gray-700">Product</label>
-                                            <select
-                                                id={`product-${index}`}
-                                                name="productId"
-                                                value={product.productId}
-                                                onChange={(e) => handleProductChange(index, e)}
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            >
-                                                <option value="">Select a product</option>
-                                                {availableProducts.map(p => (
-                                                    <option key={p.id} value={p.id}>{p.name}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label htmlFor={`quantity-${index}`} className="block text-sm font-medium text-gray-700">Quantity</label>
-                                            <input
-                                                type="number"
-                                                id={`quantity-${index}`}
-                                                name="quantity"
-                                                value={product.quantity}
-                                                onChange={(e) => handleProductChange(index, e)}
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                min="1"
-                                            />
-                                        </div>
-                                        <div className="text-right">
-                                            <label className="block text-sm font-medium text-gray-700">Price</label>
-                                            <p className="mt-2 text-md font-semibold text-gray-900">₹{product.price.toFixed(2)}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                                <button
-                                    type="button"
-                                    onClick={addProductRow}
-                                    className="mt-4 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                >
-                                    Add another Product
-                                </button>
-                            </div>
-                        </div>
+    const discountAmount = newSubtotal * (discount / 100);
+    const taxAmount = (newSubtotal - discountAmount) * (taxRate / 100);
+    setTotalAmount(newSubtotal - discountAmount + taxAmount);
+  }, [products, discount, taxRate]);
 
-                        {/* Financial Details */}
-                        <div>
-                            <h3 className="text-xl font-bold text-gray-800">Financial Details</h3>
-                            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <div>
-                                    <label htmlFor="discount" className="block text-sm font-medium text-gray-700">Discount (%)</label>
-                                    <input
-                                        type="number"
-                                        id="discount"
-                                        value={discount}
-                                        onChange={(e) => setDiscount(e.target.value)}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    />
-                                </div>
-                                <div>
-                                    <label htmlFor="payment" className="block text-sm font-medium text-gray-700">Payment Method</label>
-                                    <select
-                                        id="payment"
-                                        value={paymentMethod}
-                                        onChange={(e) => setPaymentMethod(e.target.value)}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    >
-                                        <option>Cash</option>
-                                        <option>Card</option>
-                                        <option>UPI</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
+  // Add product
+  const handleAddProduct = (product) => {
+    const exists = products.find((p) => p.id === product.id);
+    if (exists) {
+      setProducts(
+        products.map((p) =>
+          p.id === product.id ? { ...p, quantity: p.quantity + 1 } : p
+        )
+      );
+    } else {
+      setProducts([...products, { ...product, quantity: 1 }]);
+    }
+    playSound();
+    setProductSearch("");
+    setShowProductDropdown(false);
+  };
 
-                        {/* Summary Section */}
-                        <div className="border-t border-gray-200 pt-8">
-                            <div className="flex justify-between text-lg font-medium text-gray-600">
-                                <span>Subtotal</span>
-                                <span>₹{subtotal.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between text-lg font-medium text-gray-600">
-                                <span>Tax ({taxRate}%)</span>
-                                <span>₹{((subtotal * (taxRate / 100))).toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between text-2xl font-bold text-indigo-600 mt-4">
-                                <span>Total Amount</span>
-                                <span>₹{totalAmount.toFixed(2)}</span>
-                            </div>
-                        </div>
-
-                        {/* Submit Button */}
-                        <div className="mt-8">
-                            <button
-                                type="submit"
-                                className="w-full flex justify-center py-4 px-4 border border-transparent rounded-md shadow-sm text-lg font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                            >
-                                Record Sale
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+  // Quantity change
+  const handleQuantityChange = (id, qty) => {
+    setProducts(
+      products.map((p) =>
+        p.id === id ? { ...p, quantity: Math.max(1, qty) } : p
+      )
     );
+  };
+
+  // Remove product
+  const handleRemoveProduct = (id) => {
+    setProducts(products.filter((p) => p.id !== id));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    setTimeout(() => {
+      setLoading(false);
+      setSuccessPopup(true);
+      setProducts([]);
+      setCustomer("");
+      setCustomerSearch("");
+    }, 2000);
+  };
+
+  return (
+    <>
+      {/* ✅ Full Page Loader */}
+      <AnimatePresence>
+        {pageLoading && (
+          <motion.div
+            className="fixed inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-white/20 backdrop-blur-xl p-8 rounded-2xl shadow-2xl flex flex-col items-center"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+            >
+              <Loader2 className="w-12 h-12 text-white animate-spin" />
+              <p className="mt-4 text-white font-semibold text-lg">
+                Loading Add Sales...
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ✅ Actual Page */}
+      {!pageLoading && (
+        <div className="bg-gradient-to-br from-slate-50 via-indigo-50 to-white min-h-screen w-full relative">
+          <Header title="Add New Sale" />
+          <div className="p-6">
+            <div className="bg-white/90 backdrop-blur-xl shadow-2xl rounded-2xl max-w-full mx-auto p-8">
+              <form className="space-y-10" onSubmit={handleSubmit}>
+                
+                {/* Customer Search */}
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-800">Customer</h3>
+                  <div className="relative mt-3">
+                    <input
+                      type="text"
+                      value={customerSearch}
+                      onChange={(e) => {
+                        setCustomerSearch(e.target.value);
+                        setShowCustomerDropdown(true);
+                      }}
+                      placeholder="Search customer..."
+                      className="w-full rounded-xl border border-slate-200 shadow-sm px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                    {showCustomerDropdown && customerSearch && (
+                      <div className="absolute mt-2 w-full bg-white rounded-xl shadow-lg border border-slate-200 z-10 max-h-48 overflow-y-auto">
+                        {customers
+                          .filter((c) =>
+                            c.toLowerCase().includes(customerSearch.toLowerCase())
+                          )
+                          .map((c, i) => (
+                            <div
+                              key={i}
+                              onClick={() => {
+                                setCustomer(c);
+                                setCustomerSearch(c);
+                                setShowCustomerDropdown(false);
+                              }}
+                              className="px-4 py-2 cursor-pointer hover:bg-indigo-50"
+                            >
+                              {c}
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Product Search */}
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-800">Products</h3>
+                  <div className="relative mt-3">
+                    <input
+                      type="text"
+                      value={productSearch}
+                      onChange={(e) => {
+                        setProductSearch(e.target.value);
+                        setShowProductDropdown(true);
+                      }}
+                      placeholder="Search product..."
+                      className="w-full rounded-xl border border-slate-200 shadow-sm px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                    {showProductDropdown && productSearch && (
+                      <div className="absolute mt-2 w-full bg-white rounded-xl shadow-lg border border-slate-200 z-10 max-h-56 overflow-y-auto">
+                        {availableProducts
+                          .filter((p) =>
+                            p.name.toLowerCase().includes(productSearch.toLowerCase())
+                          )
+                          .map((p) => (
+                            <div
+                              key={p.id}
+                              onClick={() => handleAddProduct(p)}
+                              className="px-4 py-2 cursor-pointer hover:bg-indigo-50 flex justify-between"
+                            >
+                              <span>{p.name}</span>
+                              <span className="text-slate-500 text-sm">₹{p.price}</span>
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Product Table */}
+                <div className="overflow-x-auto mt-6">
+                  <table className="w-full border border-slate-200 rounded-xl overflow-hidden text-sm">
+                    <thead className="bg-slate-100 text-slate-700">
+                      <tr>
+                        <th className="py-3 px-4 text-left">Product</th>
+                        <th className="py-3 px-4">Category</th>
+                        <th className="py-3 px-4">Price</th>
+                        <th className="py-3 px-4">Quantity</th>
+                        <th className="py-3 px-4">Subtotal</th>
+                        <th className="py-3 px-4"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {products.length > 0 ? (
+                        products.map((p) => (
+                          <tr key={p.id} className="border-t hover:bg-slate-50">
+                            <td className="py-3 px-4">{p.name}</td>
+                            <td className="py-3 px-4 text-center">{p.category}</td>
+                            <td className="py-3 px-4 text-center">₹{p.price.toFixed(2)}</td>
+                            <td className="py-3 px-4 text-center">
+                              <input
+                                type="number"
+                                min="1"
+                                value={p.quantity}
+                                onChange={(e) =>
+                                  handleQuantityChange(p.id, parseInt(e.target.value))
+                                }
+                                className="w-16 text-center rounded-md border border-slate-300"
+                              />
+                            </td>
+                            <td className="py-3 px-4 text-center font-medium">
+                              ₹{(p.price * p.quantity).toFixed(2)}
+                            </td>
+                            <td className="py-3 px-4 text-right">
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveProduct(p.id)}
+                                className="text-red-500 hover:underline"
+                              >
+                                Remove
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="6" className="py-6 text-center text-slate-400 italic">
+                            No products added yet
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Summary Card */}
+                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-6 shadow-inner space-y-3 max-w-md ml-auto">
+                  <div className="flex justify-between text-slate-600">
+                    <span>Subtotal</span>
+                    <span>₹{subtotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-slate-600">
+                    <span>Discount (%)</span>
+                    <input
+                      type="number"
+                      value={discount}
+                      onChange={(e) => setDiscount(e.target.value)}
+                      className="w-20 text-right rounded-md border border-slate-300 px-2 py-1"
+                    />
+                    <span>- ₹{(subtotal * (discount / 100)).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-slate-600">
+                    <span>Tax ({taxRate}%)</span>
+                    <span>
+                      ₹{((subtotal - subtotal * (discount / 100)) * (taxRate / 100)).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-lg font-semibold text-indigo-700 border-t pt-3">
+                    <span>Total</span>
+                    <span>₹{totalAmount.toFixed(2)}</span>
+                  </div>
+                </div>
+
+                {/* Submit */}
+                <div className="pt-6">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium py-3 rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.01] transition flex items-center justify-center"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Recording...
+                      </>
+                    ) : (
+                      "Record Sale"
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          {/* ✅ Success Popup */}
+          <AnimatePresence>
+            {successPopup && (
+              <motion.div
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <motion.div
+                  className="bg-white rounded-2xl p-8 shadow-2xl text-center space-y-4 max-w-sm w-full"
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.8, opacity: 0 }}
+                >
+                  <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto" />
+                  <h2 className="text-2xl font-bold text-slate-800">Sale Recorded!</h2>
+                  <p className="text-slate-500">Your sale has been successfully saved.</p>
+                  <button
+                    onClick={() => setSuccessPopup(false)}
+                    className="bg-green-500 text-white px-6 py-2 rounded-xl shadow-md hover:bg-green-600 transition"
+                  >
+                    OK
+                  </button>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
+    </>
+  );
 }

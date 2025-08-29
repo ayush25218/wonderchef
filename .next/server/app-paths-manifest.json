@@ -1,3 +1,8 @@
 {
+  "/customers/report/page": "app/customers/report/page.js",
+  "/accounts/add-new/page": "app/accounts/add-new/page.js",
+  "/accounts/list/page": "app/accounts/list/page.js",
+  "/accounts/report/page": "app/accounts/report/page.js",
+  "/settings/page": "app/settings/page.js",
   "/page": "app/page.js"
 }
